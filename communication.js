@@ -72,7 +72,9 @@ module.exports = function(multicastAddr, multicastPort, unicastPort, ttl, logger
         //LOCK OK MESSASGE
         else if(message.type === 'lock ok') {
           logger.info('Got lock ok from: '+self.neighborToString(self.neighbors[message.id+message.hostname]));
-          self.neighbors[message.id+message.hostname].lockOk = true;
+          if(self.neighbors.hasOwnProperty(message.id+message.hostname)) {
+            self.neighbors[message.id+message.hostname].lockOk = true;
+          }
           self.lockCheck();
         }
         //MESSAGE
@@ -114,13 +116,14 @@ module.exports = function(multicastAddr, multicastPort, unicastPort, ttl, logger
   this.sendAnnounce();
 }
 
-module.exports.prototype.checkOut = function() {
+module.exports.prototype.checkOut = function(callback) {
   clearInterval(this.announcer);
   var packet = JSON.parse(JSON.stringify(this.packetPrototype));
   packet.type = 'goodbye';
   packet.clock = ++this.clock;
   var bpacket = new Buffer(JSON.stringify(packet));
-  this.socket.send(bpacket, 0, bpacket.length, this.multicastPort, this.multicastAddr);
+  this.logger.info('Broadcasting goodbye packet.');
+  this.socket.send(bpacket, 0, bpacket.length, this.multicastPort, this.multicastAddr, callback);
 }
 
 module.exports.prototype.lock = function(callback) {
@@ -130,6 +133,7 @@ module.exports.prototype.lock = function(callback) {
   packet.clock = ++this.clock;
   this.wantToLock = true;
   this.lockTimestamp = this.clock;
+  this.showLocks = false;
   var bpacket = new Buffer(JSON.stringify(packet));
   for(var neigh in this.neighbors) {
     var neighbor = this.neighbors[neigh];
@@ -139,7 +143,8 @@ module.exports.prototype.lock = function(callback) {
     }
   }
 
-  setTimeout(this.lockCheck.bind(this), 500);
+  var self = this;
+  setTimeout(function() {self.showLocks = true; self.lockCheck();}, 500);
 }
 module.exports.prototype.unlock = function() {
   this.wantToLock = false;
@@ -220,7 +225,9 @@ module.exports.prototype.lockCheck= function() {
     }
   }
   if(blocked) {
-    this.logger.info('Blocked by: '+blockedBy.slice(1));
+    if(this.showLocks) {
+      this.logger.info('Blocked by: '+blockedBy.slice(1));
+    }
   }
   else {
     this.holdingLock = true;

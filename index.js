@@ -23,9 +23,10 @@ commands.help = {
 commands.quit = {
   info: 'Gracefully end communication and exit.',
   handler: function() {
-    comm.checkOut();
-    cli.systemMessage('Gracefully exiting...');
-    process.exit(0);
+    comm.checkOut(function(){
+      cli.systemMessage('Gracefully exiting...');
+      process.exit(0);
+    });
   }
 };
 commands.fquit = {
