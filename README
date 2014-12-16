@@ -1,0 +1,15 @@
+Simple chat program designed to show Ricart–Agrawala mutual exclusion algorithm.
+
+Install dependencies with npm install and run with nodejs index.js.
+
+Obtain help with /help command.
+
+You can change some settings in config.ini
+
+Implementation details:
+- Program communicates over UDP sockets. Packets targeted to all nodes use multicast otherwise unicast is used.
+- Neighbor discovery works automatically (including dead neighbor pruning).
+- Program implements Lampart logical clock and shows this timestamp before event messages. Event timestamps show the local logical clock when the event was fired (packet received, message sent...).
+- Program implements Ricart–Agrawala mutual exclusion algorithm with Roucairol-Carvalho optimization
+
+Warning. Program asumes that the network delivers all packets. It WILL break on regular (imperfect) network.
