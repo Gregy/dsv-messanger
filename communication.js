@@ -193,22 +193,23 @@ module.exports.prototype.lockRespond= function() {
   }
   //if want to lock respond only to lower timestamps
   if(this.wantToLock == true) {
-    this.lockRequestQueue.forEach(function(lockRequest, index) {
+    for(var i=0;i<this.lockRequestQueue.length;++i) {
+      var lockRequest = this.lockRequestQueue[i];
       if(lockRequest.timestamp < this.lockTimestamp || 
          (lockRequest.timestamp == this.lockTimestamp && this.neighbors[lockRequest.neighbor].id < this.id)) {
         this.sendLockOk(lockRequest.neighbor);
-        this.lockRequestQueue.splice(index,1);
+        this.lockRequestQueue.splice(i--,1);
       }
-    }, this);
+    }
   }
   //send ok to everyone
   else {
-    this.lockRequestQueue.forEach(function(lockRequest, index) {
+    for(var i=0;i<this.lockRequestQueue.length;++i) {
+      var lockRequest = this.lockRequestQueue[i];
       this.sendLockOk(lockRequest.neighbor);
-      this.lockRequestQueue.splice(index,1);
-    }, this);
+      this.lockRequestQueue.splice(i--,1);
+    }
   }
-
 }
 
 module.exports.prototype.lockCheck= function() {
